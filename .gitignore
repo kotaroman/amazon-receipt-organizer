@@ -66,6 +66,7 @@ sample_pdfs/
 config.ini
 settings.json
 .env
+.claude/settings.local.json
 
 # Jupyter Notebook
 .ipynb_checkpoints/

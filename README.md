@@ -25,7 +25,6 @@ pip install -r requirements.txt
 ### Windows/Mac環境
 ```bash
 pip install -r requirements.txt
-pip install tkinterdnd2  # GUI版の起動に必須（requirements.txt未収載）
 ```
 
 ## 使い方
@@ -88,6 +87,7 @@ python amazon_receipt_organizer.py
 
 ```
 amazon-receipt-organizer/
+├── pdf_processor.py            # 共通ロジック（日付抽出・整理）
 ├── amazon_receipt_organizer.py  # GUI版（Windows/Mac）
 ├── cli_organizer.py            # CLI版（Linux/WSL）
 ├── requirements.txt            # 依存パッケージ
@@ -121,12 +121,6 @@ sudo apt install python3-tk
 
 # またはCLI版を使用
 ./run_cli.sh /path/to/folder
-```
-
-### tkinterdnd2エラーの場合（GUI版）
-```bash
-# requirements.txt に含まれていないため個別にインストール
-pip install tkinterdnd2
 ```
 
 ## 実行例

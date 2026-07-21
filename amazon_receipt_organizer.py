@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 import os
-import shutil
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from tkinterdnd2 import DND_FILES, TkinterDnD
-import pdfplumber
-import re
-from datetime import datetime
-from pathlib import Path
 import logging
-from typing import Optional, Tuple
 import concurrent.futures
 from threading import Thread
+
+from pdf_processor import PDFProcessor
 
 logging.basicConfig(
     level=logging.INFO,
@@ -21,89 +17,6 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-logger = logging.getLogger(__name__)
-
-
-class PDFProcessor:
-    def __init__(self):
-        self.invoice_folders = [
-            'Retail.TransactionalInvoicing.3.1',
-            'Retail.TransactionalInvoicing.3.2',
-            'Retail.TransactionalInvoicing.3.3',
-            'Retail.TransactionalInvoicing.3.4',
-            'Retail.TransactionalInvoicing.3.5'
-        ]
-        self.date_patterns = [
-            r'請求日[：:\s]*(\d{4})[年/-](\d{1,2})[月/-](\d{1,2})',
-            r'発行日[：:\s]*(\d{4})[年/-](\d{1,2})[月/-](\d{1,2})',
-            r'注文日[：:\s]*(\d{4})[年/-](\d{1,2})[月/-](\d{1,2})',
-            r'(\d{4})[年/-](\d{1,2})[月/-](\d{1,2})[日]?\s*請求',
-            r'Date[：:\s]*(\d{4})[/-](\d{1,2})[/-](\d{1,2})',
-            r'Invoice\s*Date[：:\s]*(\d{4})[/-](\d{1,2})[/-](\d{1,2})',
-            r'(\d{4})[/-](\d{1,2})[/-](\d{1,2})'
-        ]
-
-    def extract_invoice_date(self, pdf_path: str) -> Optional[datetime]:
-        try:
-            with pdfplumber.open(pdf_path) as pdf:
-                text = ""
-                for page in pdf.pages[:2]:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text += page_text
-                
-                for pattern in self.date_patterns:
-                    match = re.search(pattern, text)
-                    if match:
-                        year = int(match.group(1))
-                        month = int(match.group(2))
-                        day = int(match.group(3))
-                        
-                        if 2000 <= year <= 2099 and 1 <= month <= 12 and 1 <= day <= 31:
-                            return datetime(year, month, day)
-                
-                logger.warning(f"日付が見つかりませんでした: {pdf_path}")
-                return None
-                
-        except Exception as e:
-            logger.error(f"PDFの読み取りエラー {pdf_path}: {str(e)}")
-            return None
-
-    def process_pdf(self, pdf_path: str, output_base_dir: str) -> Tuple[str, bool, str]:
-        try:
-            invoice_date = self.extract_invoice_date(pdf_path)
-            
-            if not invoice_date:
-                error_msg = f"日付を抽出できませんでした: {os.path.basename(pdf_path)}"
-                return pdf_path, False, error_msg
-            
-            year_month = invoice_date.strftime("%Y%m")
-            output_dir = os.path.join(output_base_dir, year_month)
-            os.makedirs(output_dir, exist_ok=True)
-            
-            date_str = invoice_date.strftime("%Y%m%d")
-            original_name = os.path.basename(pdf_path)
-            base_name = os.path.splitext(original_name)[0]
-            new_filename = f"{date_str}_{base_name}.pdf"
-            
-            output_path = os.path.join(output_dir, new_filename)
-            
-            counter = 1
-            while os.path.exists(output_path):
-                new_filename = f"{date_str}_{base_name}_{counter}.pdf"
-                output_path = os.path.join(output_dir, new_filename)
-                counter += 1
-            
-            shutil.copy2(pdf_path, output_path)
-            
-            success_msg = f"処理完了: {original_name} → {year_month}/{new_filename}"
-            logger.info(success_msg)
-            return pdf_path, True, success_msg
-            
-        except Exception as e:
-            error_msg = f"処理エラー {os.path.basename(pdf_path)}: {str(e)}"
-            logger.error(error_msg)
-            return pdf_path, False, error_msg
 
 
 class ReceiptOrganizerGUI:
@@ -286,6 +199,10 @@ class ReceiptOrganizerGUI:
         self.root.mainloop()
 
 
-if __name__ == "__main__":
+def main():
     app = ReceiptOrganizerGUI()
     app.run()
+
+
+if __name__ == "__main__":
+    main()

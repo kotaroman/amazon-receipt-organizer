@@ -67,6 +67,7 @@ config.ini
 settings.json
 .env
 .claude/settings.local.json
+CLAUDE.local.md
 
 # Jupyter Notebook
 .ipynb_checkpoints/

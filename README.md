@@ -58,12 +58,8 @@ python amazon_receipt_organizer.py
 1. Amazonのデータリクエストで解凍したフォルダをドラッグ&ドロップ
    - または「フォルダを選択」ボタンから選択
 
-2. 自動的に以下のフォルダ内のPDFを処理
-   - Retail.TransactionalInvoicing.3.1
-   - Retail.TransactionalInvoicing.3.2
-   - Retail.TransactionalInvoicing.3.3
-   - Retail.TransactionalInvoicing.3.4
-   - Retail.TransactionalInvoicing.3.5
+2. 自動的に `Retail.TransactionalInvoicing.*` フォルダ内のPDFを処理
+   （フォルダ番号は自動検出。サブフォルダ内のPDFも対象）
 
 3. デフォルトでデスクトップの「整理済み領収書」フォルダに出力
    - 「出力先を変更」ボタンで変更可能
@@ -73,15 +69,12 @@ python amazon_receipt_organizer.py
 - フォルダ構造: `出力先/YYYYMM/`
 - ファイル名: `YYYYMMDD_元のファイル名.pdf`
 - デフォルト出力先: `~/Desktop/整理済み領収書/`
+- 同じ出力先への再実行は整理済みファイルをスキップします（重複コピーされません）
 
 ## 対象PDFファイル
 
-以下のフォルダ内のPDFファイルが処理対象です：
-- `Retail.TransactionalInvoicing.3.1/`
-- `Retail.TransactionalInvoicing.3.2/`  
-- `Retail.TransactionalInvoicing.3.3/`
-- `Retail.TransactionalInvoicing.3.4/`
-- `Retail.TransactionalInvoicing.3.5/`
+入力フォルダ直下の `Retail.TransactionalInvoicing.*` フォルダ（番号は自動検出）内の
+PDFファイルが処理対象です。サブフォルダ内のPDFも含まれます。
 
 ## ファイル構成
 

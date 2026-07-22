@@ -37,7 +37,7 @@ def main():
         return 2
 
     if success_count > 0:
-        print(f"\n整理済みファイルは以下に保存されました:")
+        print("\n整理済みファイルは以下に保存されました:")
         print(f"{output_folder}")
 
     return 0 if error_count == 0 else 1

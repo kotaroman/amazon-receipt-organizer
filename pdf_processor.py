@@ -218,7 +218,7 @@ class PDFProcessor:
                 print(f"✗ {message}")
                 error_count += 1
 
-        print(f"\n処理完了！")
+        print("\n処理完了！")
         print(f"成功: {success_count}件")
         print(f"エラー: {error_count}件")
 

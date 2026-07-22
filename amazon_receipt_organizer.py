@@ -141,14 +141,9 @@ class ReceiptOrganizerGUI:
             self.add_log(f"\n処理開始: {folder_path}")
             self.add_log(f"出力先: {self.output_path}\n")
             
-            pdf_files = []
-            for invoice_folder in self.processor.invoice_folders:
-                invoice_path = os.path.join(folder_path, invoice_folder)
-                if os.path.exists(invoice_path):
-                    self.add_log(f"フォルダ発見: {invoice_folder}")
-                    for file in os.listdir(invoice_path):
-                        if file.lower().endswith('.pdf'):
-                            pdf_files.append(os.path.join(invoice_path, file))
+            found_folders, pdf_files = self.processor.find_pdf_files(folder_path, self.output_path)
+            for folder_name in found_folders:
+                self.add_log(f"フォルダ発見: {folder_name}")
             
             if not pdf_files:
                 self.add_log("PDFファイルが見つかりませんでした。", "error")

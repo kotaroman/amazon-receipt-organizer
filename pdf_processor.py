@@ -10,6 +10,27 @@ from typing import List, Optional, Tuple
 logger = logging.getLogger(__name__)
 
 
+def setup_logging():
+    """ログ設定を初期化する（ログはホームディレクトリ配下に出力）
+
+    CWD への出力は読み取り専用ディレクトリで起動できなくなるため行わない。
+    """
+    handlers = [logging.StreamHandler()]
+    log_dir = os.path.join(os.path.expanduser("~"), ".amazon-receipt-organizer")
+    try:
+        os.makedirs(log_dir, exist_ok=True)
+        handlers.insert(0, logging.FileHandler(
+            os.path.join(log_dir, 'receipt_organizer.log'), encoding='utf-8'))
+    except OSError:
+        # ログファイルを作れない場合は標準出力のみで続行
+        pass
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=handlers
+    )
+
+
 class PDFProcessor:
     # Amazonデータリクエストの請求書フォルダ名プレフィックス
     # （3.1〜3.5 のような番号はエクスポートごとに可変のため前方一致で検出する）

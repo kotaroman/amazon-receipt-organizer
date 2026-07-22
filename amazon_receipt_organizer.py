@@ -4,21 +4,11 @@ import queue
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from tkinterdnd2 import DND_FILES, TkinterDnD
-import logging
 import concurrent.futures
 from threading import Thread, Event
 from typing import Optional
 
-from pdf_processor import PDFProcessor
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('receipt_organizer.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ]
-)
+from pdf_processor import PDFProcessor, setup_logging
 
 
 class ReceiptOrganizerGUI:
@@ -253,6 +243,7 @@ class ReceiptOrganizerGUI:
 
 
 def main():
+    setup_logging()
     app = ReceiptOrganizerGUI()
     app.run()
 

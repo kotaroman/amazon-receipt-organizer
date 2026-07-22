@@ -1,19 +1,9 @@
 #!/usr/bin/env python3
 import os
-import logging
 import argparse
 import sys
 
-from pdf_processor import PDFProcessor
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('receipt_organizer.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ]
-)
+from pdf_processor import PDFProcessor, setup_logging
 
 
 def main():
@@ -23,11 +13,12 @@ def main():
                        help='出力先フォルダ（デフォルト: ~/Desktop/整理済み領収書）')
 
     args = parser.parse_args()
+    setup_logging()
 
     input_folder = os.path.abspath(args.input_folder)
 
-    if not os.path.exists(input_folder):
-        print(f"エラー: 入力フォルダが見つかりません: {input_folder}")
+    if not os.path.isdir(input_folder):
+        print(f"エラー: 入力フォルダが見つからないか、フォルダではありません: {input_folder}")
         sys.exit(1)
 
     if args.output:
@@ -40,6 +31,10 @@ def main():
 
     processor = PDFProcessor()
     success_count, error_count = processor.organize_receipts(input_folder, output_folder)
+
+    if success_count == 0 and error_count == 0:
+        print("入力フォルダ直下に Retail.TransactionalInvoicing.* フォルダがあるか確認してください。")
+        return 2
 
     if success_count > 0:
         print(f"\n整理済みファイルは以下に保存されました:")

@@ -49,7 +49,7 @@ class PDFProcessor:
             r'注文日[：:\s]*(\d{4})[年/-](\d{1,2})[月/-](\d{1,2})',
             r'(\d{4})[年/-](\d{1,2})[月/-](\d{1,2})[日]?\s*請求',
             r'Invoice\s*Date[：:\s]*(\d{4})[/-](\d{1,2})[/-](\d{1,2})',
-            r'(?<![A-Za-z])(?<![A-Za-z][ \t])Date[：:\s]*(\d{4})[/-](\d{1,2})[/-](\d{1,2})',
+            r'(?<![A-Za-z])(?<![A-Za-z]\s)(?<![A-Za-z]\s\s)Date[：:\s]*(\d{4})[/-](\d{1,2})[/-](\d{1,2})',
             r'(?<![\d/-])(\d{4})[/-](\d{1,2})[/-](\d{1,2})(?![\d/-])'
         ]
 
@@ -76,7 +76,11 @@ class PDFProcessor:
         """
         found_folders = []
         pdf_files = []
-        exclude = os.path.abspath(output_folder) if output_folder else None
+        # シンボリックリンクや大文字小文字非区別FSでも一致するよう実パスで比較する
+        exclude = os.path.normcase(os.path.realpath(output_folder)) if output_folder else None
+
+        def is_excluded(path):
+            return exclude is not None and os.path.normcase(os.path.realpath(path)) == exclude
 
         def on_walk_error(error):
             logger.warning(f"フォルダを読み取れません {error.filename}: {str(error)}")
@@ -84,10 +88,10 @@ class PDFProcessor:
         for folder_name in self.find_invoice_folders(input_folder):
             folder_path = os.path.join(input_folder, folder_name)
             found_folders.append(folder_name)
+            if is_excluded(folder_path):
+                continue
             for root, dirs, files in os.walk(folder_path, onerror=on_walk_error):
-                if exclude:
-                    dirs[:] = [d for d in dirs
-                               if os.path.abspath(os.path.join(root, d)) != exclude]
+                dirs[:] = [d for d in dirs if not is_excluded(os.path.join(root, d))]
                 for file in files:
                     if file.lower().endswith('.pdf'):
                         pdf_files.append(os.path.join(root, file))

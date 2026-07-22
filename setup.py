@@ -5,7 +5,7 @@ setup(
     version="1.0.0",
     description="Amazon PDF領収書自動整理ツール",
     author="Your Name",
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     py_modules=["amazon_receipt_organizer", "cli_organizer", "pdf_processor"],
     install_requires=[
         "pdfplumber==0.11.4",

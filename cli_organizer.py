@@ -33,7 +33,7 @@ def main():
     success_count, error_count = processor.organize_receipts(input_folder, output_folder)
 
     if success_count == 0 and error_count == 0:
-        print("入力フォルダ直下に Retail.TransactionalInvoicing.* フォルダがあるか確認してください。")
+        print("入力フォルダ直下の Retail.TransactionalInvoicing.* フォルダにPDFが見つかりませんでした。")
         return 2
 
     if success_count > 0:

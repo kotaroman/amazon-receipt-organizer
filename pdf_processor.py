@@ -16,14 +16,20 @@ class PDFProcessor:
     INVOICE_FOLDER_PREFIX = 'Retail.TransactionalInvoicing'
 
     def __init__(self):
+        # 優先順位順。汎用パターンは誤検出しやすいため必ず末尾に置く。
+        # - Invoice Date は汎用 Date より前に置く（Order Date 等の誤採用防止）
+        # - 汎用 Date は直前が英字（OrderDate）や英字+空白（Order Date, Due Date）の
+        #   複合ラベルを否定後読みで除外する
+        # - 最後の汎用パターンは前後に数字・区切りが続く場合を除外し、
+        #   期間表記（2024/4-2025/3）や長い数字列からの日付捏造を防ぐ
         self.date_patterns = [
             r'請求日[：:\s]*(\d{4})[年/-](\d{1,2})[月/-](\d{1,2})',
             r'発行日[：:\s]*(\d{4})[年/-](\d{1,2})[月/-](\d{1,2})',
             r'注文日[：:\s]*(\d{4})[年/-](\d{1,2})[月/-](\d{1,2})',
             r'(\d{4})[年/-](\d{1,2})[月/-](\d{1,2})[日]?\s*請求',
             r'Invoice\s*Date[：:\s]*(\d{4})[/-](\d{1,2})[/-](\d{1,2})',
-            r'Date[：:\s]*(\d{4})[/-](\d{1,2})[/-](\d{1,2})',
-            r'(\d{4})[/-](\d{1,2})[/-](\d{1,2})'
+            r'(?<![A-Za-z])(?<![A-Za-z][ \t])Date[：:\s]*(\d{4})[/-](\d{1,2})[/-](\d{1,2})',
+            r'(?<![\d/-])(\d{4})[/-](\d{1,2})[/-](\d{1,2})(?![\d/-])'
         ]
 
     def find_invoice_folders(self, input_folder: str) -> List[str]:
@@ -74,20 +80,25 @@ class PDFProcessor:
                 for page in pdf.pages[:2]:
                     page_text = page.extract_text()
                     if page_text:
-                        text += page_text
+                        # ページ境界をまたいだ誤マッチを防ぐため区切りを入れる
+                        text += page_text + "\n"
         except Exception as e:
             logger.error(f"PDFの読み取りエラー {pdf_path}: {str(e)}")
             return None
 
         for pattern in self.date_patterns:
-            match = re.search(pattern, text)
-            if match:
+            for match in re.finditer(pattern, text):
                 year = int(match.group(1))
                 month = int(match.group(2))
                 day = int(match.group(3))
 
-                if 2000 <= year <= 2099 and 1 <= month <= 12 and 1 <= day <= 31:
+                if not (2000 <= year <= 2099 and 1 <= month <= 12 and 1 <= day <= 31):
+                    continue
+                try:
                     return datetime(year, month, day)
+                except ValueError:
+                    # 2月30日など暦上存在しない日付は次の候補へ
+                    continue
 
         logger.warning(f"日付が見つかりませんでした: {pdf_path}")
         return None
